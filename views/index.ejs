@@ -18,6 +18,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
         .chessboard {
             display: grid;
@@ -60,9 +61,13 @@
         #roleDisplay {
             font-size: 24px;
             font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        #turnDisplay {
+            font-size: 18px;
             margin-bottom: 20px;
             text-align: center;
-            color: #16a34a;
         }
         #statusOverlay {
             position: absolute;
@@ -79,16 +84,36 @@
             font-weight: bold;
             z-index: 10;
         }
+        #toast {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #dc2626; /* red-600 */
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 20;
+        }
+        #toast.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="statusOverlay" style="display: none;"></div>
+        <div id="statusOverlay">Waiting for opponent...</div>
 
         <div id="roleDisplay">Waiting for role...</div>
+        <div id="turnDisplay"></div>
 
         <div class="chessboard"></div>
     </div>
+
+    <div id="toast">Invalid move</div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>

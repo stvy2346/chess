@@ -3,7 +3,9 @@ const chess = new Chess();
 
 const boardElement = document.querySelector(".chessboard");
 const roleDisplay = document.getElementById("roleDisplay");
+const turnDisplay = document.getElementById("turnDisplay");
 const statusOverlay = document.getElementById("statusOverlay");
+const toast = document.getElementById("toast");
 
 let draggedPiece = null;
 let sourceSquare = null;
@@ -93,12 +95,26 @@ const hideOverlay = () => {
     statusOverlay.style.display = "none";
 };
 
+const showTurn = () => {
+    const turn = chess.turn();
+    turnDisplay.textContent = `Turn: ${turn === 'w' ? "White" : "Black"}`;
+};
+
+const showToast = (message) => {
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2500);
+};
+
 socket.on("playerRole", (role) => {
     playerRole = role.toLowerCase();
     boardElement.classList.toggle("flipped", playerRole === 'b');
     roleDisplay.textContent = `Role: ${playerRole === 'w' ? 'White' : 'Black'}`;
     hideOverlay();
     renderBoard();
+    showTurn();
 });
 
 socket.on("spectatorRole", () => {
@@ -107,22 +123,24 @@ socket.on("spectatorRole", () => {
     boardElement.classList.remove("flipped");
     hideOverlay();
     renderBoard();
+    showTurn();
 });
 
 socket.on("boardState", (fen) => {
     chess.load(fen);
     renderBoard();
+    showTurn();
 
     if (chess.game_over()) {
-        updateStatusOverlay("Game Over");
-    }else {
+        const winner =
+            chess.in_checkmate() ? (chess.turn() === 'w' ? 'Black' : 'White') + " Wins!" :
+            "Draw";
+        updateStatusOverlay(`Game Over - ${winner}`);
+    } else {
         hideOverlay();
     }
 });
 
 socket.on("invalidMove", (move) => {
-    alert(`Invalid move: ${move.from} to ${move.to}`);
+    showToast(`Invalid move: ${move.from} → ${move.to}`);
 });
-
-// Initial state
-updateStatusOverlay("Waiting for opponent...");
