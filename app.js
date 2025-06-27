@@ -22,19 +22,21 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
 
-    // Assign player roles (lowercase)
     if (!players.white) {
         players.white = socket.id;
         socket.emit("playerRole", "w");
+        socket.emit("waitingForPlayer");
     } else if (!players.black) {
         players.black = socket.id;
         socket.emit("playerRole", "b");
+
+        // Both players are ready, send board state
+        io.to(players.white).emit("boardState", chess.fen());
+        io.to(players.black).emit("boardState", chess.fen());
     } else {
         socket.emit("spectatorRole");
+        socket.emit("boardState", chess.fen());  // Spectators still need it
     }
-
-    // Send current board state to newly connected client
-    socket.emit("boardState", chess.fen());
 
     socket.on("disconnect", () => {
         console.log("Client disconnected:", socket.id);
@@ -47,7 +49,6 @@ io.on("connection", (socket) => {
 
     socket.on("move", (move) => {
         try {
-            // Check if player is allowed to move
             if (chess.turn() === 'w' && socket.id !== players.white) return;
             if (chess.turn() === 'b' && socket.id !== players.black) return;
 

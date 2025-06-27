@@ -144,3 +144,8 @@ socket.on("boardState", (fen) => {
 socket.on("invalidMove", (move) => {
     showToast(`Invalid move: ${move.from} → ${move.to}`);
 });
+
+socket.on("waitingForPlayer", () => {
+    console.log("Received waitingForPlayer");
+    updateStatusOverlay("Waiting for other player to join...");
+});
